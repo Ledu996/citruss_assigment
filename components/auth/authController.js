@@ -1,7 +1,7 @@
 const db = require('../../config/database/connection');
 const { compare } = require('bcrypt');
-const { issueNewToken } = require('../../lib/jwtHelper');
 const { generateRandomString } = require('../../lib/misc');
+const { issueNewToken } = require('../../lib/jwtHelper');
 
 const authentication = async (req, res) => {
     try {
@@ -10,15 +10,13 @@ const authentication = async (req, res) => {
             'SELECT * FROM users where username = ?',
             [username]
         )
-        // added one more validation
         if (!user[0]) return res.json({ status: 'failed', message: 'User is not found'});
         const { password : hashedPassword } = user[0];
-        const isValid = password === hashedPassword; //await compare(password, hashedPassword);
+        const isValid = password.trim() === hashedPassword;
         
         if(!isValid) return res.json({status: 'failed', message: 'Not succeed, invalid username or password'})
         // instead of jwt add generateRandomString(32)
-        const acc_token = generateRandomString(32);
-        //await issueNewToken({id : user[0].id, username});
+        const acc_token = await issueNewToken({id : user[0].id, username});
 
         res.setHeader('X-token', acc_token);
         
@@ -42,7 +40,8 @@ const authentication = async (req, res) => {
         nonRefundedDeposits = !nonRefundedDeposits[0]['dep_amount'] ? 0 : nonRefundedDeposits[0]['dep_amount'];
         purchaseAmount = !purchaseAmount[0]['purchase_amount'] ? 0 : purchaseAmount[0]['purchase_amount'];
         let totalBalance = nonRefundedDeposits - purchaseAmount;
-        
+        // 10 eur in cents = 1000, eur * 100 = cents
+        // did not understand when to convert it
         return res.json({
             token: acc_token,
             balance: totalBalance,

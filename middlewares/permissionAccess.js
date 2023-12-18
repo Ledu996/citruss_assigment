@@ -5,7 +5,7 @@ const { verify } = require('jsonwebtoken')
 const isAuthenticated = async (req, res, next) => {
     try {
         const token = req.headers['x-token'];
-        // await verify(token, 'secret');
+        await verify(token, 'secret');
         if (!token) throw new Error();
         next()
     } catch (err) {

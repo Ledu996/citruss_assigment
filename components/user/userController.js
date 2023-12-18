@@ -1,5 +1,7 @@
 const db = require('../../config/database/connection');
 // const { v4: uuidv4 } = require('uuid');
+// const { hash } = require('bcrypt')
+
 const { generateRandomString } = require('../../lib/misc');
 
 const register = async (req, res) => {
@@ -16,13 +18,12 @@ const register = async (req, res) => {
         }
 
         await db.query(
-            `INSERT INTO users (id, username, password) VALUES('${id}','${username}', '${password}')`,
-            [[username.trim(), password.trim()]]
+            'INSERT INTO users (id, username, password) VALUES(?, ?, ?)',
+            [id, username.trim(), password.trim()]
         );
         
         return res.json({status: "success", message: "Successfully"})
     } catch (err) {
-        console.log(err);
         return res.json({status: "failed", message: "Not succeeded, unknown error"});
     }
 };
